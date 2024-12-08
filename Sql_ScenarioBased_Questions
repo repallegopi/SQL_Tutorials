@@ -1,0 +1,91 @@
+
+1. INITCAP()..first letter capital
+
+2.from Table..NUMBER OF OCCURANCES OF N
+
+  i.select ColumnName, LEN(ColumnName)- LEN(REPLACE(ColumnName, 'N', ''))
+
+  
+
+  ii.SELECT REGEXP_COUNT(COLUMN_NAME,'CONDITION') FROM TABLE_NAME
+
+4.select * from (select * from emp  order by sal desc) where rownum<=3;(default order by is ascending order)
+
+
+5.THREE HIGHEST SALARY:
+
+select empno,ename,sal,deptno,rnk from (select empno,ename,sal,
+deptno,dense_rank() over(partition by deptno order by sal desc) rnk 
+from emp)where rnk<=3;
+
+
+6.select deptno,listagg(ename,',') within group(order by ename)
+ names from emp group by deptno;
+
+
+7.select empno,ename,lead(ename) over(order by sal  desc) after_sal from emp;
+
+8.uniq records:
+		1.select id,name from friends1 group by id,name;
+
+		2. select id,name from 
+		 (select id,name, row_number() 
+		 over (partition by id,name order by id) rno from friends1)where rno=1;
+
+9.delete records:
+  1. delete from friends2 where rowid in( select rowid from (select rowid,row_number()
+ over(partition by id,name order by id) rno from friends2) where rno>1);
+  
+  2.delete from friends3 a where rowid> (select min(rowid) from friends3 b where b.id=a.id);
+
+  3.delete from friends3 where rowid not in 
+  (select min(rowid) from friends3 group by id,name);
+
+  4.delete friends3 where rowid in
+       ( with cte as
+              ( select id
+                     , row_number() over(partition by id,name order by id) as rn
+                from   friends3 )
+         select rowid from cte
+         where  rn > 1 );
+
+2nd highest salary:
+
+  1.select * from emp where sal=(SELECT MAX(sal) AS salary FROM Emp WHERE sal NOT IN (
+SELECT MAX(sal) AS salary FROM Emp));
+
+  2.WITH
+TEMP AS(
+ SELECT MAX(sal) AS salary FROM Emp WHERE sal NOT IN (
+ SELECT MAX(sal) FROM Emp)
+)
+SELECT a.* FROM Emp a JOIN TEMP b on a.sal = b.salary;
+
+  3.SELECT empno, 
+ eName, 
+ Sal 
+FROM(
+ SELECT Emp.*, 
+ DENSE_RANK() OVER(ORDER BY Sal DESC) as SALARY_RANK 
+ FROM Emp)
+WHERE SALARY_RANK =2
+
+3rd highest salary:
+
+1.SELECT MAX(sal) as salary FROM Emp WHERE sal NOT IN (
+ SELECT sal FROM(
+ SELECT sal FROM Emp ORDER BY sal DESC)
+ WHERE ROWNUM < 3
+);
+
+
+2.WITH 
+TEMP AS(
+ SELECT MAX(sal) as sal FROM Emp WHERE sal NOT IN (
+ SELECT sal FROM(
+ SELECT sal FROM Emp ORDER BY sal DESC)
+ WHERE ROWNUM < 3)
+)
+SELECT a.* FROM Emp a join TEMP b on a.sal = b.sal
+
+
